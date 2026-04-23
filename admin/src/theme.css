@@ -1,0 +1,41 @@
+/* LIGHT THEME (default) */
+body.light {
+  --bg: #F5F6FA;
+  --card: #FFFFFF;
+  --text: #2B3674;
+  --subText: #A3AED0;
+  --primary: #4318FF;
+  --border: #E9EDF7;
+
+  --sidebar: #FFFFFF;
+  --sidebarActive: #4880FF;
+  --sidebarText: #202224;
+
+  --navbar: #FFFFFF;
+
+  --success: #05CD99;
+  --danger: #FF3B3B;
+  --warning: #FFB547;
+  --heading: #4880FF;
+}
+
+/* DARK THEME (UPDATED AS PER YOUR DESIGN) */
+:root {
+  --bg: #1B2431;        /* main background */
+  --card: #273142;      /* cards, navbar, sidebar */
+  --text: #FFFFFF;
+  --subText: #A3AED0;
+  --primary: #5A6ACF;   /* slightly softer blue (matches design better) */
+  --border: #323D4E;
+
+  --sidebar: #273142;
+  --sidebarActive: #4880FF;
+  --sidebarText: #A3AED0;
+
+  --navbar: #273142;
+
+  --success: #05CD99;
+  --danger: #FF3B3B;
+  --warning: #FFB547;
+  --heading: #4880FF;
+}

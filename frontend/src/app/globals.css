@@ -1,0 +1,108 @@
+@config "../../tailwind.config.js";
+@import "tailwindcss";
+
+:root {
+  --bgWhite: #ffffff;
+  --bgGreen: #01A49E;
+  --bgGray: #EBEEF6;
+  --text-white: #ffffff;
+  --text-black: #000000;
+  --text-blue: #253D4E;
+  --text-green: #01A49E;
+  --text-dark: #222222;
+  --text-muted: #666666;
+  --text-accent: #E15E43;
+}
+
+.bg-white {
+  background-color: var(--bgWhite);
+}
+
+.bg-green {
+  background-color: var(--bgGreen);
+}
+
+.bg-green-47 {
+  background-color: rgba(1, 164, 158, 0.47); /* example */
+}
+
+.bg-grays {
+  background-color: var(--bgGray);
+}
+
+.text-white {
+  color: var(--text-white);
+}
+
+.text-black {
+  color: var(--text-black);
+}
+
+.text-blue {
+  color: var(--text-blue);
+}
+
+.text-green {
+  color: var(--text-green);
+}
+
+.text-dark {
+  color: var(--text-dark);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-accent {
+  color: var(--text-accent);
+}
+
+.fs-12-400{
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.fs-12-700{
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.fs-14{
+  font-size: 14px;
+}
+
+.fs-14-normal{
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.fs-14-500{
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.fs-14-600{
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fs-14-700{
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.fs-24-700{
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.fs-30-400{
+  font-size: 30px;
+  font-weight: 400;
+}
+
+.fs-72-700{
+  font-size: 72px;
+  font-weight: 700;
+}
