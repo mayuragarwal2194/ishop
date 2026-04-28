@@ -106,8 +106,8 @@ export const getAllCategories = async (req, res) => {
       res,
       200,
       "Category fetched successfully",
+      categories,
       {
-        categories,
         total: totalCategories,
         page: pageNumber,
         totalPages

@@ -116,8 +116,8 @@ export const getAllBrands = async (req, res) => {
       res,
       200,
       "Brands fetched successfully",
+      brands,
       {
-        brands,
         total: totalBrands,
         page: pageNumber,
         totalPages

@@ -27,8 +27,10 @@ export default function Categories() {
   const fetchCategories = async () => {
     try {
       const res = await getAllCategories();
+      console.log(res.data.data.categories);
+      
       // always extract array safely
-      const categoriesArray = res?.data?.data || [];
+      const categoriesArray = res?.data?.data?.categories || [];
 
       setCategories(categoriesArray);
     } catch (err) {

@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 5000;
 import categoryRoutes from "./routes/category.routes.js";
 import colorRoutes from "./routes/color.routes.js";
 import brandRoutes from "./routes/brand.routes.js";
+import subCategoryRoutes from "./routes/subCategory.routes.js";
 
 
 const app = express();
@@ -22,6 +23,7 @@ app.use(express.json());
 app.use("/api/v1/category", categoryRoutes);
 app.use("/api/v1/color", colorRoutes);
 app.use("/api/v1/brand", brandRoutes);
+app.use("/api/v1/subcategory", subCategoryRoutes);
 
 
 app.use(errorHandler);
