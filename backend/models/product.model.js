@@ -7,6 +7,7 @@ const variantSchema = new mongoose.Schema(
     sku: {
       type: String,
       required: true,
+      unique: true,
       trim: true,
     },
 
@@ -33,20 +34,19 @@ const variantSchema = new mongoose.Schema(
     },
 
     // Pricing
-    original_price: {
+    price: {
       type: Number,
       required: true,
       min: 0,
     },
-    discount_percentage: {
+    salePrice: {
       type: Number,
       min: 0,
-      max: 100,
       default: 0,
     },
 
     // Images per variant
-    featuredImage: {
+    variantFeaturedImage: {
       url: {
         type: String,
         default: DEFAULT_PRODUCT_IMAGE,
@@ -57,7 +57,7 @@ const variantSchema = new mongoose.Schema(
       },
     },
 
-    galleryImages: [
+    variantGalleryImages: [
       {
         url: {
           type: String,
@@ -97,9 +97,9 @@ const productSchema = new mongoose.Schema(
     },
 
     // Relations
-    category: {
+    subCategory: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
+      ref: "SubCategory",
       required: true,
     },
 
@@ -114,7 +114,7 @@ const productSchema = new mongoose.Schema(
       type: [variantSchema],
       validate: {
         validator: function (value) {
-          return value.length > 0;
+          return Array.isArray(value) && value.length > 0;
         },
         message: "At least one variant is required",
       },
@@ -156,12 +156,27 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    isHome: {
+      type: Boolean,
+      default: false
+    },
+
+    isTop: {
+      type: Boolean,
+      default: false
+    },
+
+    isPopular: {
+      type: Boolean,
+      default: false
+    },
   },
   { timestamps: true }
 );
 
 // 🔥 Pre-save middleware to update stock status
-productSchema.pre("save", function (next) {
+productSchema.pre("save", function () {
   let totalStock = 0;
 
   if (this.variants && this.variants.length > 0) {
@@ -171,8 +186,15 @@ productSchema.pre("save", function (next) {
   }
 
   this.stockStatus = totalStock > 0 ? "In Stock" : "Out Of Stock";
-  next();
 });
+
+productSchema.index({ name: "text", slug: "text" });
+productSchema.index({ subCategory: 1 });
+productSchema.index({ brand: 1 });
+productSchema.index({ isActive: 1 });
+
+productSchema.index({ "variants.color": 1 });
+productSchema.index({ stockStatus: 1 });
 
 const Product = mongoose.model("Product", productSchema);
 export default Product;

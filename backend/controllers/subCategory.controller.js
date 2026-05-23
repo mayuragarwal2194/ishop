@@ -12,6 +12,7 @@ import Category from "../models/category.model.js";
 import { getPagination } from "../utils/pagination.js";
 import { buildSearchQuery } from "../utils/search.js";
 import { validateObjectId } from "../utils/validateObjectId.js";
+import { buildSortQuery } from "../utils/buildSortQuery.js";
 
 // Create SubCategory
 export const createSubCategory = asyncHandler(async (req, res) => {
@@ -81,7 +82,7 @@ export const createSubCategory = asyncHandler(async (req, res) => {
 export const getAllSubCategories = asyncHandler(async (req, res) => {
   const filter = {};
 
-  const { isActive, isHome, isTop, isPopular, category, search } = req.query;
+  const { isActive, isHome, isTop, isPopular, category, search, sort } = req.query;
 
   // 🔥 Use global pagination
   const { page, limit, skip } = getPagination(req.query);
@@ -104,12 +105,15 @@ export const getAllSubCategories = asyncHandler(async (req, res) => {
   // Combine filters and search into final query
   const finalFilter = { ...filter, ...searchQuery };
 
+  const sortQuery = buildSortQuery(sort);
+
   // total count for pagination metadata
   const totalSubCategories = await SubCategory.countDocuments(finalFilter);
   const totalPages = Math.ceil(totalSubCategories / limit);
 
   // fetch subcategories with pagination and category details
   const subCategories = await SubCategory.find(finalFilter)
+    .sort(sortQuery)
     .skip(skip)
     .limit(limit)
     .populate("category", "name slug");
