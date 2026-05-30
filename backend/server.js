@@ -3,6 +3,7 @@ import "./config/env.js"
 import cors from "cors";
 import {connectDB} from "./config/db.js" 
 import { errorHandler } from "./middlewares/error.middleware.js";
+import cookieParser from "cookie-parser";
 
 const PORT = process.env.PORT || 5000;
 
@@ -12,6 +13,7 @@ import colorRoutes from "./routes/color.routes.js";
 import brandRoutes from "./routes/brand.routes.js";
 import subCategoryRoutes from "./routes/subCategory.routes.js";
 import productRoutes from "./routes/product.routes.js";
+import authRoutes from "./routes/auth.routes.js";
 
 
 const app = express();
@@ -19,13 +21,14 @@ const app = express();
 // middlewares
 app.use(cors())
 app.use(express.json());
-
+app.use(cookieParser());
 
 app.use("/api/v1/category", categoryRoutes);
 app.use("/api/v1/color", colorRoutes);
 app.use("/api/v1/brand", brandRoutes);
 app.use("/api/v1/subcategory", subCategoryRoutes);
 app.use("/api/v1/product", productRoutes);
+app.use("/api/v1/auth", authRoutes);
 
 
 app.use(errorHandler);
