@@ -15,6 +15,7 @@ import subCategoryRoutes from "./routes/subCategory.routes.js";
 import productRoutes from "./routes/product.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import cartRoutes from "./routes/cart.routes.js";
 
 
 const app = express();
@@ -31,6 +32,7 @@ app.use("/api/v1/subcategory", subCategoryRoutes);
 app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/cart", cartRoutes);
 
 
 app.use(errorHandler);
