@@ -1,6 +1,7 @@
 import { registerUser, loginUser, logoutUser, refreshAccessTokenService, forgotPasswordService, resetPasswordService, verifyEmailService, sendVerificationEmailService } from "../services/auth.service.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { sanitizeUser } from "../utils/auth_utils/sanitizeUser.js";
 import { setAuthCookies } from "../utils/auth_utils/setAuthCookies.js";
 
 export const register = asyncHandler(async (req, res) => {
@@ -55,18 +56,14 @@ export const logout = asyncHandler(async (req, res) => {
 });
 
 export const getMe = asyncHandler(async (req, res) => {
-  const user = req.user.toObject();
-
-  delete user.password;
-  delete user.refreshToken;
-  delete user.__v;
+  const user = req.user;
 
   return ApiResponse(
     res,
     200,
     "User profile fetched successfully",
     {
-      user,
+      user: sanitizeUser(user),
     }
   );
 });

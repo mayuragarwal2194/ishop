@@ -12,7 +12,7 @@ export const validate = (schema) => {
 
       result.error.issues.forEach((issue) => {
 
-        const field = issue.path[0];
+        const field = issue.path[0] || "general";
 
         formattedErrors[field] = issue.message;
       });

@@ -46,6 +46,19 @@ export const protect = asyncHandler(async (req, res, next) => {
     throw new ApiError(401, "Session expired");
   }
 
+  // Check if user is deleted or suspended
+  if (user.isDeleted) {
+    throw new ApiError(403, "Account has been deleted");
+  }
+
+  // Check if user is suspended
+  if (user.status === "suspended") {
+    throw new ApiError(
+      403,
+      "Account has been suspended. Please contact support."
+    );
+  }
+
   // Attach user to request object
   req.user = user;
 

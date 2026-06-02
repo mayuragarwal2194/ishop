@@ -18,11 +18,21 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
     },
 
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+
     phone: {
       type: String,
       unique: true,
       sparse: true,
       trim: true,
+    },
+
+    isPhoneVerified: {
+      type: Boolean,
+      default: false,
     },
 
     password: {
@@ -60,10 +70,21 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
-    
-    isEmailVerified: {
+
+    status: {
+      type: String,
+      enum: ["active", "suspended"],
+      default: "active",
+    },
+
+    isDeleted: {
       type: Boolean,
       default: false,
+    },
+
+    deletedAt: {
+      type: Date,
+      default: null,
     },
 
     passwordResetToken: {

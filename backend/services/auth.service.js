@@ -11,6 +11,7 @@ import { sendEmail } from "../utils/auth_utils/sendEmail.js";
 import { EMAIL_VERIFICATION_EXPIRES, PASSWORD_RESET_EXPIRES } from "../utils/constants.js";
 import { verifyEmailTemplate } from "../utils/email_templates/verifyEmailTemplate.js";
 import { forgotPasswordTemplate } from "../utils/email_templates/forgotPasswordTemplate.js";
+import { sanitizeUser } from "../utils/auth_utils/sanitizeUser.js";
 
 
 export const registerUser = async (userData) => {
@@ -58,15 +59,8 @@ export const registerUser = async (userData) => {
     );
   }
 
-  // CLEAN RESPONSE
-  const userResponse = newUser.toObject();
-
-  delete userResponse.password;
-  delete userResponse.refreshToken;
-  delete userResponse.__v;
-
   return {
-    user: userResponse,
+    user: sanitizeUser(newUser),
     accessToken,
     refreshToken,
   };
@@ -81,6 +75,22 @@ export const loginUser = async (userData) => {
   // Check if user exists
   if (!user) {
     throw new ApiError(401, "Invalid email or password");
+  }
+
+  // Check if account is deleted
+  if (user.isDeleted) {
+    throw new ApiError(
+      403,
+      "Account has been deleted"
+    );
+  }
+
+  // Check if account is suspended
+  if (user.status === "suspended") {
+    throw new ApiError(
+      403,
+      "Account has been suspended"
+    );
   }
 
   // Compare passwords
@@ -110,15 +120,8 @@ export const loginUser = async (userData) => {
     validateBeforeSave: false,
   });
 
-  // CLEAN RESPONSE
-  const userResponse = user.toObject();
-
-  delete userResponse.password;
-  delete userResponse.refreshToken;
-  delete userResponse.__v;
-
   return {
-    user: userResponse,
+    user: sanitizeUser(user),
     accessToken,
     refreshToken,
   };
@@ -174,6 +177,22 @@ export const refreshAccessTokenService = async (incomingRefreshToken) => {
 
   if (!user) {
     throw new ApiError(401, "User not found");
+  }
+
+  // Check if account is deleted
+  if (user.isDeleted) {
+    throw new ApiError(
+      403,
+      "Account has been deleted"
+    );
+  }
+
+  // Check if account is suspended
+  if (user.status === "suspended") {
+    throw new ApiError(
+      403,
+      "Account has been suspended"
+    );
   }
 
   // Check token version (instant logout support)
