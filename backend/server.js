@@ -16,6 +16,7 @@ import productRoutes from "./routes/product.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import cartRoutes from "./routes/cart.routes.js";
+import addressRoutes from "./routes/address.routes.js";
 
 
 const app = express();
@@ -33,6 +34,7 @@ app.use("/api/v1/product", productRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/cart", cartRoutes);
+app.use("/api/v1/address", addressRoutes);
 
 
 app.use(errorHandler);
