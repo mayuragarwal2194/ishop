@@ -148,7 +148,10 @@ export const getCartService = async (userId) => {
     }
 
     // Calculate effective price (considering sale price if available) and subtotal
-    const effectivePrice = variant?.salePrice || variant?.price || 0;
+    const effectivePrice =
+      variant?.salePrice > 0
+        ? variant.salePrice
+        : variant?.price || 0;
     const subtotal = effectivePrice * item.quantity;
 
     // Push item details along with availability and warning info to the items array
