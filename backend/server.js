@@ -18,6 +18,7 @@ import userRoutes from "./routes/user.routes.js";
 import cartRoutes from "./routes/cart.routes.js";
 import addressRoutes from "./routes/address.routes.js";
 import couponRoutes from "./routes/coupon.routes.js";
+import orderRoutes from "./routes/order.routes.js";
 
 
 
@@ -38,6 +39,7 @@ app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/cart", cartRoutes);
 app.use("/api/v1/address", addressRoutes);
 app.use("/api/v1/coupon", couponRoutes);
+app.use("/api/v1/order", orderRoutes);
 
 
 app.use(errorHandler);
