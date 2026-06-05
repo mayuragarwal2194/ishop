@@ -16,7 +16,7 @@ import {
 export const createRazorpayOrder = asyncHandler(async (req, res) => {
   const result = await createRazorpayOrderService(
     req.user._id,
-    req.body.orderId
+    req.validatedData.orderId
   );
 
   return ApiResponse(
@@ -30,7 +30,7 @@ export const createRazorpayOrder = asyncHandler(async (req, res) => {
 export const verifyRazorpayPayment = asyncHandler(async (req, res) => {
   const result = await verifyRazorpayPaymentService(
     req.user._id,
-    req.body
+    req.validatedData
   );
 
   return ApiResponse(
@@ -43,8 +43,8 @@ export const verifyRazorpayPayment = asyncHandler(async (req, res) => {
 
 export const handleRazorpayFailure = asyncHandler(async (req, res) => {
   const result = await handleRazorpayFailureService(
-    req.body.razorpayOrderId,
-    req.body.razorpayPaymentId
+    req.validatedData.razorpayOrderId,
+    req.validatedData.razorpayPaymentId
   );
 
   return ApiResponse(
