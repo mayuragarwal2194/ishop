@@ -1,12 +1,17 @@
 import Review from "../models/review.model.js";
 import Product from "../models/product.model.js";
 import Order from "../models/order/order.model.js";
+import User from "../models/user.model.js";
+
 import { ApiError } from "../utils/ApiError.js";
 import { validateObjectId } from "../utils/validateObjectId.js";
 import { getPagination } from "../utils/pagination.js";
 import { buildSearchQuery } from "../utils/search.js";
 import { buildSortQuery } from "../utils/buildSortQuery.js";
 import { parseBoolean } from "../helper/parseBoolean.helper.js";
+import { createNotificationService } from "./notification.service.js";
+import { sendEmail } from "../utils/auth_utils/sendEmail.js";
+import { reviewNotificationTemplate } from "../utils/email_templates/reviewNotificationTemplate.js";
 
 
 export const createReviewService = async (userId, payload) => {
@@ -327,6 +332,40 @@ export const updateReviewStatusService = async (reviewId, status) => {
 
   await review.save();
 
+  // Create notification
+  await createNotificationService({
+    user: review.user,
+    title: `Review ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+    message: `Your review has been ${status}.`,
+    type: "review",
+    data: {
+      reviewId: review._id,
+      productId: review.product,
+      status,
+      redirectTo: `/reviews/${review._id}`,
+    },
+  });
+
+  // Send Email
+  try {
+    const user = await User.findById(review.user).select("name email");
+
+    await sendEmail({
+      to: user.email,
+      subject: `Review ${status}`,
+      html: reviewNotificationTemplate(
+        user.name,
+        `Review ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+        `Your review has been ${status}.`
+      ),
+    });
+  } catch (error) {
+    console.error(
+      "Review status email failed:",
+      error.message
+    );
+  }
+
   return review;
 };
 
@@ -347,6 +386,39 @@ export const adminReplyReviewService = async (adminId, reviewId, message) => {
   };
 
   await review.save();
+
+  // Create Notification
+  await createNotificationService({
+    user: review.user,
+    title: "Admin Replied to Your Review",
+    message: "Admin has replied to your review.",
+    type: "review",
+    data: {
+      reviewId: review._id,
+      productId: review.product,
+      redirectTo: `/reviews/${review._id}`,
+    },
+  });
+
+  // Send Email
+  try {
+    const user = await User.findById(review.user).select("name email");
+
+    await sendEmail({
+      to: user.email,
+      subject: "Admin Replied to Your Review",
+      html: reviewNotificationTemplate(
+        user.name,
+        "Admin Replied to Your Review",
+        "Admin has replied to your review."
+      ),
+    });
+  } catch (error) {
+    console.error(
+      "Admin reply review email failed:",
+      error.message
+    );
+  }
 
   return review;
 };

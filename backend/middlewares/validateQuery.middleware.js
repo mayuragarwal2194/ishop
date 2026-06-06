@@ -1,0 +1,27 @@
+import { ApiError } from "../utils/ApiError.js";
+
+export const validateQuery = (schema) => {
+  return (req, res, next) => {
+    const result = schema.safeParse(req.query);
+
+    if (!result.success) {
+      const formattedErrors = {};
+
+      result.error.issues.forEach((issue) => {
+        const field = issue.path[0] || "general";
+
+        formattedErrors[field] = issue.message;
+      });
+
+      throw new ApiError(
+        400,
+        "Validation failed",
+        formattedErrors
+      );
+    }
+
+    req.validatedQuery = result.data;
+
+    next();
+  };
+};

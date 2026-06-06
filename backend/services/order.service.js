@@ -6,6 +6,7 @@ import Address from "../models/address.model.js";
 import Coupon from "../models/coupon.model.js";
 import CouponUsage from "../models/couponUsage.model.js";
 import Counter from "../models/order/counter.model.js";
+import User from "../models/user.model.js";
 
 import { ApiError } from "../utils/ApiError.js";
 import { validateObjectId } from "../utils/validateObjectId.js";
@@ -13,8 +14,11 @@ import { validateCouponService } from "./coupon.service.js";
 import { buildSearchQuery } from "../utils/search.js";
 import { buildSortQuery } from "../utils/buildSortQuery.js";
 import { getPagination } from "../utils/pagination.js";
-
-
+import { createNotificationService } from "./notification.service.js";
+import { sendEmail } from "../utils/auth_utils/sendEmail.js";
+import { orderPlacedTemplate } from "../utils/email_templates/orderPlacedTemplate.js";
+import { orderStatusTemplate } from "../utils/email_templates/orderStatusTemplate.js";
+import { orderCancelledTemplate } from "../utils/email_templates/orderCancelledTemplate.js";
 
 
 // User Specific Services
@@ -32,19 +36,10 @@ export const createOrderService = async (
     // 1. Validate address
     const validAddressId = validateObjectId(addressId, "Address");
 
-    console.log("========== ADDRESS DEBUG ==========");
-    console.log("addressId:", addressId);
-    console.log("validAddressId:", validAddressId);
-    console.log("userId:", userId);
-    console.log("===================================");
-
     const address = await Address.findOne({
       _id: validAddressId,
       user: userId,
     }).session(session);
-
-    console.log("Found address:", address);
-
 
     if (!address) {
       throw new ApiError(404, "Address not found");
@@ -219,6 +214,40 @@ export const createOrderService = async (
 
     // 11. Commit
     await session.commitTransaction();
+
+    // 12. Create notification
+    await createNotificationService({
+      user: userId,
+      title: "Order Placed",
+      message: `Your order ${order.orderNumber} has been placed successfully.`,
+      type: "order",
+      data: {
+        orderId: order._id,
+        orderNumber: order.orderNumber,
+        redirectTo: `/orders/${order._id}`,
+      },
+    });
+
+    // Send Email
+
+    try {
+      const user = await User.findById(userId).select("name email");
+
+      await sendEmail({
+        to: user.email,
+        subject: `Order Placed - ${order.orderNumber}`,
+        html: orderPlacedTemplate(
+          user.name,
+          order.orderNumber,
+          order.pricing.grandTotal
+        ),
+      });
+    } catch (error) {
+      console.error(
+        "Order placed email failed:",
+        error.message
+      );
+    }
 
     return order;
 
@@ -427,6 +456,41 @@ export const updateOrderStatusService = async (orderId, orderStatus) => {
     validateBeforeSave: false,
   });
 
+  // Create notification
+  await createNotificationService({
+    user: order.user,
+    title: `Order ${orderStatus.charAt(0).toUpperCase() + orderStatus.slice(1)}`,
+    message: `Your order ${order.orderNumber} is now ${orderStatus}.`,
+    type: "order",
+    data: {
+      orderId: order._id,
+      orderNumber: order.orderNumber,
+      orderStatus,
+      redirectTo: `/orders/${order._id}`,
+    },
+  });
+
+  // Send Email
+  try {
+    const user = await User.findById(order.user)
+      .select("name email");
+
+    await sendEmail({
+      to: user.email,
+      subject: `Order ${orderStatus} - ${order.orderNumber}`,
+      html: orderStatusTemplate(
+        user.name,
+        order.orderNumber,
+        orderStatus
+      ),
+    });
+  } catch (error) {
+    console.error(
+      "Order status email failed:",
+      error.message
+    );
+  }
+
   return order;
 };
 
@@ -589,6 +653,41 @@ export const cancelOrderService = async (orderId, currentUser) => {
     });
 
     await session.commitTransaction();
+
+    // Create cancellation notification
+    await createNotificationService({
+      user: order.user,
+      title: "Order Cancelled",
+      message: `Your order ${order.orderNumber} has been cancelled.`,
+      type: "order",
+      data: {
+        orderId: order._id,
+        orderNumber: order.orderNumber,
+        orderStatus: order.orderStatus,
+        cancelledBy: currentUser.role,
+        redirectTo: `/orders/${order._id}`,
+      },
+    });
+
+    // Send Email
+    try {
+      const user = await User.findById(order.user)
+        .select("name email");
+
+      await sendEmail({
+        to: user.email,
+        subject: `Order Cancelled - ${order.orderNumber}`,
+        html: orderCancelledTemplate(
+          user.name,
+          order.orderNumber
+        ),
+      });
+    } catch (error) {
+      console.error(
+        "Order cancellation email failed:",
+        error.message
+      );
+    }
 
     return order;
 

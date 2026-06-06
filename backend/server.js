@@ -22,6 +22,7 @@ import orderRoutes from "./routes/order.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import wishlistRoutes from "./routes/wishlist.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
 
 
 
@@ -46,6 +47,7 @@ app.use("/api/v1/order", orderRoutes);
 app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/v1/wishlist", wishlistRoutes);
 app.use("/api/v1/review", reviewRoutes);
+app.use("/api/v1/notification", notificationRoutes);
 
 
 app.use(errorHandler);

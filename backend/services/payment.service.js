@@ -3,10 +3,15 @@ import mongoose from "mongoose";
 
 import Payment from "../models/payment.model.js";
 import Order from "../models/order/order.model.js";
+import User from "../models/user.model.js";
 
 import { razorpayInstance } from "../config/razorpay.config.js";
 import { ApiError } from "../utils/ApiError.js";
 import { validateObjectId } from "../utils/validateObjectId.js";
+import { createNotificationService } from "./notification.service.js";
+import { sendEmail } from "../utils/auth_utils/sendEmail.js";
+import { paymentFailedTemplate } from "../utils/email_templates/paymentFailedTemplate.js";
+import { paymentSuccessTemplate } from "../utils/email_templates/paymentSuccessTemplate.js";
 
 
 export const createRazorpayOrderService = async (userId, orderId) => {
@@ -167,6 +172,40 @@ export const verifyRazorpayPaymentService = async (
     // 9. Commit transaction
     await session.commitTransaction();
 
+    // Create notification
+    await createNotificationService({
+      user: order.user,
+      title: "Payment Successful",
+      message: `Payment for order ${order.orderNumber} was successful.`,
+      type: "payment",
+      data: {
+        orderId: order._id,
+        orderNumber: order.orderNumber,
+        paymentId: payment._id,
+        redirectTo: `/orders/${order._id}`,
+      },
+    });
+
+    // Send email
+    try {
+      const user = await User.findById(order.user).select("name email");
+
+      await sendEmail({
+        to: user.email,
+        subject: `Payment Successful - ${order.orderNumber}`,
+        html: paymentSuccessTemplate(
+          user.name,
+          order.orderNumber,
+          order.pricing.grandTotal
+        ),
+      });
+    } catch (error) {
+      console.error(
+        "Payment success email failed:",
+        error.message
+      );
+    }
+
     // 10. Return updated data
     return {
       payment,
@@ -197,6 +236,13 @@ export const handleRazorpayFailureService = async (
     throw new ApiError(400, "Payment already completed successfully");
   }
 
+  // Find related order
+  const order = await Order.findById(payment.order);
+
+  if (!order) {
+    throw new ApiError(404, "Order not found");
+  }
+
   // Update payment
   payment.status = "failed";
 
@@ -205,6 +251,39 @@ export const handleRazorpayFailureService = async (
   }
 
   await payment.save();
+
+  // Create notification
+  await createNotificationService({
+    user: payment.user,
+    title: "Payment Failed",
+    message: `Payment for order ${order.orderNumber} has failed.`,
+    type: "payment",
+    data: {
+      orderId: order._id,
+      orderNumber: order.orderNumber,
+      paymentId: payment._id,
+      redirectTo: `/orders/${order._id}`,
+    },
+  });
+
+  // Send Email
+  try {
+    const user = await User.findById(payment.user).select("name email");
+
+    await sendEmail({
+      to: user.email,
+      subject: `Payment Failed - ${order.orderNumber}`,
+      html: paymentFailedTemplate(
+        user.name,
+        order.orderNumber
+      ),
+    });
+  } catch (error) {
+    console.error(
+      "Payment failed email failed:",
+      error.message
+    );
+  }
 
   return payment;
 };
